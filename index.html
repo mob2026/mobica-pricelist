@@ -424,42 +424,71 @@ function downloadImg(id, name){
   var img=document.getElementById("mImg");
   var flipped=img&&img.classList.contains("flipped");
   var safeName=(name||id).replace(/[^a-zA-Z0-9_\-]/g,"_");
+  var fileName=safeName+(flipped?"_mirrored":"")+".jpg";
 
-  if(!flipped){
-    var a=document.createElement("a");
-    a.href=p.image;
-    a.download=safeName+".jpg";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    return;
+  /* Convert data URL → Blob (works for both flipped and non-flipped) */
+  function getBlob(callback){
+    if(!flipped){
+      /* Non-flipped: just decode the data URL into a Blob */
+      var parts=p.image.split(",");
+      var byteString=atob(parts[1]);
+      var mime=parts[0].match(/:(.*?);/)[1];
+      var ab=new ArrayBuffer(byteString.length);
+      var ia=new Uint8Array(ab);
+      for(var i=0;i<byteString.length;i++)ia[i]=byteString.charCodeAt(i);
+      callback(new Blob([ab],{type:mime}));
+    }else{
+      /* Flipped: draw onto canvas with horizontal flip, export as Blob */
+      var src=new Image();
+      src.onload=function(){
+        var c=document.createElement("canvas");
+        c.width=src.naturalWidth;
+        c.height=src.naturalHeight;
+        var ctx=c.getContext("2d");
+        ctx.fillStyle="#ffffff";
+        ctx.fillRect(0,0,c.width,c.height);
+        ctx.translate(c.width,0);
+        ctx.scale(-1,1);
+        ctx.drawImage(src,0,0);
+        c.toBlob(function(blob){callback(blob);},"image/jpeg",0.92);
+      };
+      src.src=p.image;
+    }
   }
 
-  // Mirrored: draw onto canvas with horizontal flip, then download
-  var src=new Image();
-  src.crossOrigin="anonymous";
-  src.onload=function(){
-    var c=document.createElement("canvas");
-    c.width=src.naturalWidth;
-    c.height=src.naturalHeight;
-    var ctx=c.getContext("2d");
-    ctx.fillStyle="#ffffff";
-    ctx.fillRect(0,0,c.width,c.height);
-    ctx.translate(c.width,0);
-    ctx.scale(-1,1);
-    ctx.drawImage(src,0,0);
-    c.toBlob(function(blob){
-      var url=URL.createObjectURL(blob);
-      var a=document.createElement("a");
-      a.href=url;
-      a.download=safeName+"_mirrored.jpg";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){URL.revokeObjectURL(url);},1000);
-    },"image/jpeg",0.92);
-  };
-  src.src=p.image;
+  getBlob(function(blob){
+    /* Strategy 1: Try Web Share API with files (best for iOS Safari) */
+    if(navigator.canShare){
+      try{
+        var file=new File([blob],fileName,{type:blob.type});
+        if(navigator.canShare({files:[file]})){
+          navigator.share({files:[file],title:fileName}).catch(function(){
+            /* user cancelled or share failed — fall through to other methods */
+            fallbackDownload(blob,fileName);
+          });
+          return;
+        }
+      }catch(e){/* fall through */}
+    }
+    fallbackDownload(blob,fileName);
+  });
+}
+
+function fallbackDownload(blob,fileName){
+  var url=URL.createObjectURL(blob);
+  /* Strategy 2: anchor with download attribute (works on Chrome/Edge/Firefox/desktop Safari) */
+  var a=document.createElement("a");
+  a.href=url;
+  a.download=fileName;
+  a.rel="noopener";
+  /* If download attribute isn't supported, open in a new tab so user can long-press → Save */
+  if(typeof a.download==="undefined"){
+    a.target="_blank";
+  }
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
 }
 
 /* ── upload modal ── */
