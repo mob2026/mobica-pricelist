@@ -73,6 +73,26 @@ main{max-width:1400px;margin:0 auto;padding:24px 28px 80px}
 .pprice{margin-top:7px;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pprice .cur{font-size:9.5px;color:var(--ink3);letter-spacing:.16em;text-transform:uppercase;margin-right:4px;font-weight:400}
 .empty{text-align:center;padding:80px 20px;color:var(--ink3)}
+
+/* Install banner */
+.install-banner{display:none;position:fixed;bottom:16px;left:16px;right:16px;max-width:480px;margin:0 auto;background:var(--ink);color:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:200;align-items:center;gap:12px;animation:slideUp .3s cubic-bezier(.2,.8,.2,1)}
+.install-banner.show{display:flex}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.install-text{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.install-text strong{font-family:"Montserrat",sans-serif;font-weight:600;font-size:14px}
+.install-text span{font-size:11.5px;color:rgba(255,255,255,.7);font-weight:300}
+.install-action{background:var(--red);color:#fff;border:none;padding:9px 16px;border-radius:999px;font:600 12px "Montserrat",sans-serif;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.install-action:hover{opacity:.9}
+.install-close{background:transparent;color:rgba(255,255,255,.6);border:none;font-size:22px;line-height:1;cursor:pointer;padding:0 4px;transition:color .15s}
+.install-close:hover{color:#fff}
+
+/* iOS help content */
+.ios-help{display:block;max-width:440px;padding:36px 28px}
+.ios-content h2{font-family:"Montserrat",sans-serif;font-weight:700;font-size:22px;margin-bottom:12px}
+.ios-content p{font-size:13.5px;color:var(--ink2);margin-bottom:14px;line-height:1.5}
+.ios-content ol{margin:0 0 16px 22px;font-size:13.5px;color:var(--ink);line-height:1.8}
+.ios-content ol li{margin-bottom:6px}
+.ios-content .ios-note{font-size:12px;color:var(--ink3);background:#f4f3ee;padding:10px 12px;border-radius:6px;margin-top:16px;margin-bottom:0}
 .empty strong{display:block;font-family:"Montserrat",sans-serif;font-size:22px;color:var(--ink);margin-bottom:8px;font-weight:500}
 
 /* Detail modal */
@@ -166,6 +186,33 @@ main{max-width:1400px;margin:0 auto;padding:24px 28px 80px}
     <strong>Nothing found</strong>Try a different search or filter.
   </div>
 </main>
+
+<!-- Install banner: shows on first visit if not already installed -->
+<div class="install-banner" id="installBanner">
+  <div class="install-text">
+    <strong id="installTitle">Install as app</strong>
+    <span id="installSubtext">Add to your home screen for quick access</span>
+  </div>
+  <button class="install-action" id="installBtn">Install</button>
+  <button class="install-close" onclick="dismissInstall()" title="Dismiss">&times;</button>
+</div>
+
+<!-- iOS instructions modal (shown when iOS user taps Install) -->
+<div class="overlay" id="iosOverlay" onclick="if(event.target===this)closeIos()">
+  <div class="dmodal ios-help">
+    <button class="xbtn" onclick="closeIos()">&times;</button>
+    <div class="ios-content">
+      <h2>Install on iPhone</h2>
+      <p>To add this app to your home screen:</p>
+      <ol>
+        <li>Tap the <b>Share</b> button <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> at the bottom of Safari</li>
+        <li>Scroll down and tap <b>Add to Home Screen</b></li>
+        <li>Tap <b>Add</b> in the top right</li>
+      </ol>
+      <p class="ios-note">Note: this only works in <b>Safari</b>, not in Chrome on iPhone.</p>
+    </div>
+  </div>
+</div>
 
 <!-- Detail modal -->
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeDetail()">
@@ -420,58 +467,76 @@ function mirrorImg(){
 
 function downloadImg(id, name){
   var p=CATALOG.find(function(x){return x.id===id;});
-  if(!p||!p.image)return;
+  if(!p){alert("Product not found");return;}
+  if(!p.image){alert("This product has no image to download");return;}
   var img=document.getElementById("mImg");
   var flipped=img&&img.classList.contains("flipped");
-  var safeName=(name||id).replace(/[^a-zA-Z0-9_\-]/g,"_");
+  var safeName=(name||p.name||"product").replace(/[^a-zA-Z0-9_\-]/g,"_")||"product";
   var fileName=safeName+(flipped?"_mirrored":"")+".jpg";
 
-  /* Convert data URL → Blob (works for both flipped and non-flipped) */
-  function getBlob(callback){
-    if(!flipped){
-      /* Non-flipped: just decode the data URL into a Blob */
-      var parts=p.image.split(",");
-      var byteString=atob(parts[1]);
-      var mime=parts[0].match(/:(.*?);/)[1];
-      var ab=new ArrayBuffer(byteString.length);
-      var ia=new Uint8Array(ab);
-      for(var i=0;i<byteString.length;i++)ia[i]=byteString.charCodeAt(i);
-      callback(new Blob([ab],{type:mime}));
-    }else{
-      /* Flipped: draw onto canvas with horizontal flip, export as Blob */
-      var src=new Image();
-      src.onload=function(){
-        var c=document.createElement("canvas");
-        c.width=src.naturalWidth;
-        c.height=src.naturalHeight;
-        var ctx=c.getContext("2d");
-        ctx.fillStyle="#ffffff";
-        ctx.fillRect(0,0,c.width,c.height);
-        ctx.translate(c.width,0);
-        ctx.scale(-1,1);
-        ctx.drawImage(src,0,0);
-        c.toBlob(function(blob){callback(blob);},"image/jpeg",0.92);
-      };
-      src.src=p.image;
-    }
-  }
-
-  getBlob(function(blob){
-    /* Strategy 1: Try Web Share API with files (best for iOS Safari) */
-    if(navigator.canShare){
-      try{
-        var file=new File([blob],fileName,{type:blob.type});
-        if(navigator.canShare({files:[file]})){
-          navigator.share({files:[file],title:fileName}).catch(function(){
-            /* user cancelled or share failed — fall through to other methods */
-            fallbackDownload(blob,fileName);
-          });
-          return;
+  try{
+    /* Convert data URL → Blob (works for both flipped and non-flipped) */
+    function processImage(){
+      if(!flipped){
+        /* Non-flipped: decode data URL into a Blob directly */
+        try{
+          var parts=p.image.split(",");
+          var byteString=atob(parts[1]);
+          var mime=(parts[0].match(/:(.*?);/)||[null,"image/jpeg"])[1];
+          var ab=new ArrayBuffer(byteString.length);
+          var ia=new Uint8Array(ab);
+          for(var i=0;i<byteString.length;i++)ia[i]=byteString.charCodeAt(i);
+          deliverBlob(new Blob([ab],{type:mime}));
+        }catch(e){
+          alert("Could not prepare image: "+e.message);
         }
-      }catch(e){/* fall through */}
+      }else{
+        /* Flipped: draw onto canvas with horizontal flip, export as Blob */
+        var src=new Image();
+        src.onload=function(){
+          try{
+            var c=document.createElement("canvas");
+            c.width=src.naturalWidth;
+            c.height=src.naturalHeight;
+            var ctx=c.getContext("2d");
+            ctx.fillStyle="#ffffff";
+            ctx.fillRect(0,0,c.width,c.height);
+            ctx.translate(c.width,0);
+            ctx.scale(-1,1);
+            ctx.drawImage(src,0,0);
+            c.toBlob(function(blob){
+              if(blob)deliverBlob(blob);
+              else alert("Could not create mirrored image");
+            },"image/jpeg",0.92);
+          }catch(e){alert("Mirror failed: "+e.message);}
+        };
+        src.onerror=function(){alert("Could not load image for mirroring");};
+        src.src=p.image;
+      }
     }
-    fallbackDownload(blob,fileName);
-  });
+
+    function deliverBlob(blob){
+      /* Strategy 1: Web Share API with files (best for iOS Safari & some Android) */
+      if(navigator.canShare){
+        try{
+          var file=new File([blob],fileName,{type:blob.type||"image/jpeg"});
+          if(navigator.canShare({files:[file]})){
+            navigator.share({files:[file],title:fileName})
+              .catch(function(err){
+                /* User cancelled or share failed — fall back to direct download */
+                if(err&&err.name!=="AbortError")fallbackDownload(blob,fileName);
+              });
+            return;
+          }
+        }catch(e){/* fall through */}
+      }
+      fallbackDownload(blob,fileName);
+    }
+
+    processImage();
+  }catch(e){
+    alert("Download failed: "+e.message);
+  }
 }
 
 function fallbackDownload(blob,fileName){
@@ -507,54 +572,115 @@ document.getElementById("q").addEventListener("input",function(e){activeQ=e.targ
 buildFilters();
 render();
 
-/* ── PWA: register inline service worker for offline support ── */
+/* ── PWA: install + standalone mode work via the manifest (no service worker needed).
+   Removing the SW means no offline mode, but updates always show instantly and
+   nothing gets stuck in stale cache. */
 if ("serviceWorker" in navigator) {
-  /* The SW is defined as a string and registered from a Blob URL — works only
-     when the page is served from http(s):// (not file://). Caches the page
-     and key assets so the app works fully offline after first visit. */
-  var swCode = `
-    var CACHE = "mobica-pricelist-v1";
-    var ASSETS = [self.registration.scope, self.registration.scope + "index.html"];
-    self.addEventListener("install", function(e){
-      e.waitUntil(caches.open(CACHE).then(function(c){
-        return c.addAll(ASSETS).catch(function(){ /* tolerate failures */ });
-      }));
-      self.skipWaiting();
-    });
-    self.addEventListener("activate", function(e){
-      e.waitUntil(caches.keys().then(function(keys){
-        return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));
-      }));
-      self.clients.claim();
-    });
-    self.addEventListener("fetch", function(e){
-      if(e.request.method!=="GET")return;
-      e.respondWith(
-        caches.match(e.request).then(function(cached){
-          if(cached)return cached;
-          return fetch(e.request).then(function(resp){
-            /* only cache same-origin successful responses */
-            if(resp&&resp.status===200&&new URL(e.request.url).origin===self.location.origin){
-              var copy=resp.clone();
-              caches.open(CACHE).then(function(c){c.put(e.request,copy);});
-            }
-            return resp;
-          }).catch(function(){
-            /* offline + nothing cached: try the page itself as fallback */
-            if(e.request.mode==="navigate")return caches.match(self.registration.scope);
-          });
-        })
-      );
-    });
-  `;
-  var swBlob = new Blob([swCode], {type: "application/javascript"});
-  var swUrl = URL.createObjectURL(swBlob);
-  window.addEventListener("load", function(){
-    navigator.serviceWorker.register(swUrl).catch(function(err){
-      console.log("SW registration skipped:", err && err.message);
-    });
-  });
+  /* Clean up any old service workers from previous versions */
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){ r.unregister(); });
+  }).catch(function(){});
+  /* Clear any old caches */
+  if ("caches" in window) {
+    caches.keys().then(function(keys){
+      keys.forEach(function(k){ caches.delete(k); });
+    }).catch(function(){});
+  }
 }
+
+/* ── Install banner logic ── */
+var deferredInstallPrompt=null;
+var installBanner=document.getElementById("installBanner");
+var installBtn=document.getElementById("installBtn");
+var installSubtext=document.getElementById("installSubtext");
+
+/* Detect platform and PWA install state */
+function isStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches
+    || window.navigator.standalone===true;
+}
+function isIOS(){
+  return /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+function isAndroid(){
+  return /Android/.test(navigator.userAgent);
+}
+
+/* Catch the Chrome/Edge install prompt event so we can fire it from our own button */
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  showInstallBanner();
+});
+
+/* If already installed, hide forever */
+window.addEventListener("appinstalled", function(){
+  hideInstallBanner();
+  localStorage.setItem("installDismissed","1");
+});
+
+function showInstallBanner(){
+  /* Don't show if: already installed, user dismissed, or no install path available */
+  if(isStandalone())return;
+  if(localStorage.getItem("installDismissed")==="1")return;
+
+  if(isIOS()){
+    installSubtext.textContent="Tap Install for instructions";
+    installBanner.classList.add("show");
+  }else if(deferredInstallPrompt){
+    installSubtext.textContent="Add to home screen for quick access";
+    installBanner.classList.add("show");
+  }else if(isAndroid()){
+    /* Android but no prompt event yet — show after a delay */
+    installSubtext.textContent="Tap menu (⋮) → 'Install app' or 'Add to Home screen'";
+    installBanner.classList.add("show");
+  }
+}
+
+function hideInstallBanner(){
+  installBanner.classList.remove("show");
+}
+
+function dismissInstall(){
+  hideInstallBanner();
+  localStorage.setItem("installDismissed","1");
+}
+
+installBtn.addEventListener("click", function(){
+  if(isIOS()){
+    /* Show iOS instructions modal */
+    document.getElementById("iosOverlay").classList.add("open");
+    document.body.style.overflow="hidden";
+  }else if(deferredInstallPrompt){
+    /* Trigger Chrome/Edge native install prompt */
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(function(choice){
+      if(choice.outcome==="accepted")hideInstallBanner();
+      deferredInstallPrompt=null;
+    });
+  }else if(isAndroid()){
+    /* Fallback: show generic instructions */
+    alert("To install: tap the browser menu (⋮) and choose 'Install app' or 'Add to Home screen'");
+  }
+});
+
+function closeIos(){
+  document.getElementById("iosOverlay").classList.remove("open");
+  document.body.style.overflow="";
+}
+
+/* Show banner on iOS after a short delay (since beforeinstallprompt never fires there) */
+window.addEventListener("load", function(){
+  if(isIOS()&&!isStandalone()&&localStorage.getItem("installDismissed")!=="1"){
+    setTimeout(showInstallBanner, 1200);
+  }
+  /* Android fallback if no prompt event arrives within 3s */
+  if(isAndroid()&&!isStandalone()&&localStorage.getItem("installDismissed")!=="1"){
+    setTimeout(function(){
+      if(!installBanner.classList.contains("show"))showInstallBanner();
+    }, 3000);
+  }
+});
 </script>
 </body>
 </html>
