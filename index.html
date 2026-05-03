@@ -13,11 +13,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <!-- App icon: black "M." in a white circle, inline SVG (no external file needed) -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='256' fill='%23ffffff'/><text x='50%25' y='50%25' text-anchor='middle' dominant-baseline='central' font-family='Montserrat,Arial,sans-serif' font-weight='800' font-size='280' fill='%23000000' letter-spacing='-8'>m.</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='90' fill='%23ffffff'/><text x='50%25' y='50%25' text-anchor='middle' dominant-baseline='central' font-family='Montserrat,Arial,sans-serif' font-weight='800' font-size='280' fill='%23000000' letter-spacing='-8'>m.</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='256' fill='%23000000'/><text x='50%25' y='50%25' text-anchor='middle' dominant-baseline='central' font-family='Montserrat,Arial,sans-serif' font-weight='800' font-size='280' fill='%23ffffff' letter-spacing='-8'>m.</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='90' fill='%23000000'/><text x='50%25' y='50%25' text-anchor='middle' dominant-baseline='central' font-family='Montserrat,Arial,sans-serif' font-weight='800' font-size='280' fill='%23ffffff' letter-spacing='-8'>m.</text></svg>">
 
 <!-- PWA: web app manifest, embedded as a data URL so everything stays in one file -->
-<link rel="manifest" href='data:application/manifest+json,{"name":"Mobica · Product Browser","short_name":"mobica.","start_url":".","display":"standalone","background_color":"%23ffffff","theme_color":"%23000000","orientation":"any","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27><rect width=%27512%27 height=%27512%27 rx=%2790%27 fill=%27%23ffffff%27/><text x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dominant-baseline=%27central%27 font-family=%27Montserrat,Arial,sans-serif%27 font-weight=%27800%27 font-size=%27280%27 fill=%27%23000000%27 letter-spacing=%27-8%27>m.</text></svg>","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}'>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Mobica · Product Browser","short_name":"mobica.","start_url":".","display":"standalone","background_color":"%23000000","theme_color":"%23000000","orientation":"any","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27><rect width=%27512%27 height=%27512%27 rx=%2790%27 fill=%27%23000000%27/><text x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dominant-baseline=%27central%27 font-family=%27Montserrat,Arial,sans-serif%27 font-weight=%27800%27 font-size=%27280%27 fill=%27%23ffffff%27 letter-spacing=%27-8%27>m.</text></svg>","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}'>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -48,6 +48,10 @@ header{position:sticky;top:0;z-index:50;background:rgba(250,250,250,.94);backdro
 .chip:hover{border-color:var(--ink2)}
 .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .chip .n{opacity:.4;margin-left:4px;font-size:10px}
+.chip-set{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;min-width:0}
+.mobile-select{display:none;cursor:pointer;padding:7px 32px 7px 12px;background:transparent url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 10px center;border:1px solid var(--line);border-radius:999px;font:500 12px "Montserrat",sans-serif;color:var(--ink2);transition:all .13s;-webkit-appearance:none;appearance:none;outline:none;flex:1;min-width:0}
+.mobile-select.on{background-color:var(--ink);color:#fff;border-color:var(--ink);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>")}
+.mobile-select option{color:var(--ink);background:#fff}
 .price-select{cursor:pointer;padding:5px 32px 5px 12px;background:transparent url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 10px center;border:1px solid var(--line);border-radius:999px;font:500 11.5px "Montserrat",sans-serif;color:var(--ink2);transition:all .13s;-webkit-appearance:none;appearance:none;outline:none}
 .price-select:hover{border-color:var(--ink2)}
 .price-select.on{background-color:var(--ink);color:#fff;border-color:var(--ink);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>")}
@@ -131,9 +135,24 @@ main{max-width:1400px;margin:0 auto;padding:24px 28px 80px}
 .mpage{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-top:18px}
 
 @media(max-width:700px){
-  .bar{padding:12px 16px}
-  .filter-bar{padding:10px 16px 12px}
-  main{padding:20px 16px 60px}
+  header{border-top-width:2px}
+  .bar{padding:10px 14px;gap:8px}
+  .brand{font-size:18px}
+  .brand small{font-size:8.5px;margin-left:8px;padding-left:8px;letter-spacing:.14em}
+  .sw{order:3;flex:1 1 100%;max-width:none;min-width:0}
+  .sw input{padding:8px 12px 8px 32px;font-size:13px}
+  .sw svg{left:10px;width:14px;height:14px}
+  .cnt{font-size:11px;margin-left:auto}
+  .filter-bar{padding:8px 14px 10px;gap:6px}
+  .filter-row{gap:8px}
+  .filter-label{min-width:64px;font-size:9px;letter-spacing:.14em;margin-right:0}
+  /* Hide chips, show dropdowns on mobile */
+  .chip-set{display:none}
+  .mobile-select{display:block}
+  .filter-row-pricesort{flex-wrap:wrap;gap:6px}
+  .filter-label-sort{margin-left:0 !important}
+  .price-select{padding:7px 30px 7px 12px;font-size:12px;background-position:right 10px center;background-size:9px 9px;flex:1;min-width:0}
+  main{padding:20px 14px 60px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:16px 10px}
   .pname{font-size:15px}
   .dmodal{grid-template-columns:1fr}
@@ -141,6 +160,14 @@ main{max-width:1400px;margin:0 auto;padding:24px 28px 80px}
   .mimg img{padding:20px}
   .mbody{padding:22px 20px 20px;max-height:none}
   .mname{font-size:26px}
+  .nav-btn{width:36px;height:36px}
+  .nav-prev{left:8px}
+  .nav-next{right:8px}
+  .nav-counter{font-size:10.5px;padding:4px 10px}
+  }
+@media(max-width:420px){
+  .brand small{display:none}
+  .filter-label{min-width:54px;font-size:8.5px}
   }
 </style>
 </head>
@@ -159,16 +186,18 @@ main{max-width:1400px;margin:0 auto;padding:24px 28px 80px}
   <div class="filter-bar">
     <div class="filter-row">
       <span class="filter-label">Catalog</span>
-      <div id="cat-chips"></div>
+      <div id="cat-chips" class="chip-set"></div>
+      <select id="cat-select" class="mobile-select"></select>
     </div>
     <div class="filter-row">
       <span class="filter-label">Category</span>
-      <div id="type-chips"></div>
+      <div id="type-chips" class="chip-set"></div>
+      <select id="type-select" class="mobile-select"></select>
     </div>
-    <div class="filter-row">
+    <div class="filter-row filter-row-pricesort">
       <span class="filter-label">Price</span>
       <select id="price-select" class="price-select"></select>
-      <span class="filter-label" style="margin-left:18px">Sort</span>
+      <span class="filter-label filter-label-sort">Sort</span>
       <select id="sort-select" class="price-select">
         <option value="default">Default</option>
         <option value="price-asc">Price: Low → High</option>
@@ -292,13 +321,17 @@ function buildFilters(){
   var catCounts={ALL:CATALOG.length};
   CATALOG.forEach(function(p){catCounts[p.catalog]=(catCounts[p.catalog]||0)+1;});
   var cats=Object.keys(catCounts).filter(function(c){return c!=="ALL";}).sort();
+  var catItems=[{k:"ALL",l:"All Catalogs"}].concat(cats.map(function(c){return{k:c,l:catShort(c)};}));
   renderChips("cat-chips",[{k:"ALL",l:"All"}].concat(cats.map(function(c){return{k:c,l:catShort(c)};})),catCounts,activeCat,function(v){activeCat=v;buildFilters();render();});
+  populateSelect("cat-select",catItems,catCounts,activeCat,function(v){activeCat=v;buildFilters();render();});
 
   /* category */
   var typeCounts={ALL:CATALOG.length};
   CATALOG.forEach(function(p){typeCounts[p.category]=(typeCounts[p.category]||0)+1;});
   var types=Object.keys(typeCounts).filter(function(c){return c!=="ALL";}).sort();
+  var typeItems=[{k:"ALL",l:"All Categories"}].concat(types.map(function(t){return{k:t,l:t};}));
   renderChips("type-chips",[{k:"ALL",l:"All"}].concat(types.map(function(t){return{k:t,l:t};})),typeCounts,activeType,function(v){activeType=v;buildFilters();render();});
+  populateSelect("type-select",typeItems,typeCounts,activeType,function(v){activeType=v;buildFilters();render();});
 
   /* price (dropdown) */
   var priceCounts={ALL:CATALOG.length};
@@ -334,6 +367,17 @@ function renderChips(containerId,items,counts,active,onClick){
     b.onclick=function(){onClick(item.k);};
     wrap.appendChild(b);
   });
+}
+
+function populateSelect(selectId,items,counts,active,onChange){
+  var sel=document.getElementById(selectId);
+  if(!sel)return;
+  sel.innerHTML=items.map(function(item){
+    return '<option value="'+esc(item.k)+'"'+(item.k===active?' selected':'')+'>'
+      +esc(item.l)+' ('+(counts[item.k]||0)+')</option>';
+  }).join("");
+  sel.classList.toggle("on",active!=="ALL");
+  sel.onchange=function(){onChange(this.value);};
 }
 
 function matches(p){
